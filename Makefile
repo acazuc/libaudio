@@ -12,9 +12,11 @@ RANLIB = ranlib
 
 RANLIBFLAGS =
 
-CLFAGS = -Wall -Wextra -Werror -Ofast -pipe -mtune=generic -flto=8
+CLFAGS = -g -Wall -Wextra -Werror -Ofast -pipe -mtune=generic -funroll-loops -flto=8
 
-INCLUDES_PATH = -I src -I lib
+INCLUDES_PATH = -I src
+INCLUDES_PATH+= -I ../lib/sndfile/src
+INCLUDES_PATH+= -I ../lib/openal/include
 
 SRCS_PATH = src/
 
