@@ -1,4 +1,5 @@
 #include "BufferedAudioPlayer.h"
+# include "Exception.h"
 #include <iostream>
 #include <cstring>
 #include <vector>
@@ -16,13 +17,13 @@ namespace libaudio
 		SF_INFO fileInfos;
 		this->sndfile = sf_open(filename.c_str(), SFM_READ, &fileInfos);
 		if (!this->sndfile)
-			throw std::exception();
+			throw Exception("Cant open file");
 		this->nbSamples  = static_cast<ALsizei>(fileInfos.channels * fileInfos.frames);
 		this->sampleRate = static_cast<ALsizei>(fileInfos.samplerate);
 		if (this->nbSamples <= 0)
 		{
 			sf_close(this->sndfile);
-			throw std::exception();
+			throw Exception("Invalid samples number");
 		}
 		switch (fileInfos.channels)
 		{
@@ -33,15 +34,18 @@ namespace libaudio
 				this->format = AL_FORMAT_STEREO16;
 				break;
 			default:
-				throw std::exception();
+				throw Exception("Invalid channels");
 		}
 		alGenSources(1, &this->source);
 		if (alGetError() != AL_NO_ERROR)
-			throw std::exception();
+			throw Exception("Can't generate OpenAL source");
 		this->sourceCreated = true;
 		alGenBuffers(BUFFERED_AUDIO_PLAYER_BUFFER_NUMBER, this->buffers);
 		if (alGetError() != AL_NO_ERROR)
-			throw std::exception();
+		{
+			alDeleteSources(1, &this->source);
+			throw Exception("Can't generate OpenAL buffers");
+		}
 		this->buffersCreated = true;
 		for (uint8_t i = 0; i < BUFFERED_AUDIO_PLAYER_BUFFER_NUMBER; ++i)
 		{
@@ -49,7 +53,11 @@ namespace libaudio
 				alSourceQueueBuffers(this->source, 1, &this->buffers[i]);
 		}
 		if (alGetError() != AL_NO_ERROR)
-			throw std::exception();
+		{
+			alDeleteSources(1, &this->source);
+			alDeleteBuffers(BUFFERED_AUDIO_PLAYER_BUFFER_NUMBER, this->buffers);
+			throw Exception("Can't queue OpenAL source buffers");
+		}
 	}
 
 	BufferedAudioPlayer::~BufferedAudioPlayer()
@@ -120,25 +128,25 @@ namespace libaudio
 
 	bool BufferedAudioPlayer::play()
 	{
-		alSourcePlay(source);
+		alSourcePlay(this->source);
 		return (alGetError() == AL_NO_ERROR);
 	}
 
 	bool BufferedAudioPlayer::pause()
 	{
-		alSourcePause(source);
+		alSourcePause(this->source);
 		return (alGetError() == AL_NO_ERROR);
 	}
 
 	bool BufferedAudioPlayer::setGain(float gain)
 	{
-		alSourcef(source, AL_GAIN, gain);
+		alSourcef(this->source, AL_GAIN, gain);
 		return (alGetError() == AL_NO_ERROR);
 	}
 
 	bool BufferedAudioPlayer::setPitch(float pitch)
 	{
-		alSourcef(source, AL_PITCH, pitch);
+		alSourcef(this->source, AL_PITCH, pitch);
 		return (alGetError() == AL_NO_ERROR);
 	}
 

@@ -1,4 +1,5 @@
 #include "AudioPlayer.h"
+#include "Exception.h"
 #include <iostream>
 #include <cstring>
 #include <vector>
@@ -11,13 +12,13 @@ namespace libaudio
 		SF_INFO fileInfos;
 		SNDFILE* file = sf_open(filename.c_str(), SFM_READ, &fileInfos);
 		if (!file)
-			throw std::exception();
+			throw Exception("Can't open file");
 		ALsizei nbSamples  = static_cast<ALsizei>(fileInfos.channels * fileInfos.frames);
 		ALsizei sampleRate = static_cast<ALsizei>(fileInfos.samplerate);
 		if (nbSamples <= 0)
 		{
 			sf_close(file);
-			throw std::exception();
+			throw Exception("Invalid samples number");
 		}
 		float *raw = new float[nbSamples];
 		sf_read_float(file, raw, nbSamples);
@@ -44,60 +45,69 @@ namespace libaudio
 			default:
 			{
 				delete[] (samples);
-				throw std::exception();
+				throw Exception("Invalid channels");
 			}
 		}
-		alGenBuffers(1, &buffer);
+		alGenSources(1, &this->source);
+		if (alGetError() != AL_NO_ERROR)
+			throw Exception("Can't generate OpenAL source");
+		alGenBuffers(1, &this->buffer);
 		if (alGetError() != AL_NO_ERROR)
 		{
 			delete[] (samples);
-			throw std::exception();
+			alDeleteSources(1, &this->source);
+			throw Exception("Can't generate OpenAL buffer");
 		}
-		alBufferData(buffer, format, &samples[0], nbSamples * sizeof(int16_t), sampleRate);
+		alBufferData(this->buffer, format, &samples[0], nbSamples * sizeof(int16_t), sampleRate);
 		delete[] (samples);
 		if (alGetError() != AL_NO_ERROR)
-			throw std::exception();
-		alGenSources(1, &source);
+		{
+			alDeleteBuffers(1, &this->buffer);
+			alDeleteSources(1, &this->source);
+			throw Exception("Cant't fill OpenAL buffer datas");
+		}
+		alSourcei(this->source, AL_BUFFER, this->buffer);
 		if (alGetError() != AL_NO_ERROR)
-			throw std::exception();
-		alSourcei(source, AL_BUFFER, buffer);
-		if (alGetError() != AL_NO_ERROR)
-			throw std::exception();
+		{
+			alDeleteBuffers(1, &this->buffer);
+			alDeleteSources(1, &this->source);
+			throw Exception("Can't bind OpenAL buffer to OpenAL source");
+		}
 	}
 
 	AudioPlayer::~AudioPlayer()
 	{
-		alDeleteBuffers(1, &buffer);
-		alDeleteSources(1, &source);
+		alDeleteBuffers(1, &this->buffer);
+		alDeleteSources(1, &this->source);
 	}
 
 	bool AudioPlayer::play()
 	{
-		alSourcePlay(source);
+		alSourcePlay(this->source);
 		return (alGetError() == AL_NO_ERROR);
 	}
 
 	bool AudioPlayer::pause()
 	{
-		alSourcePause(source);
+		alSourcePause(this->source);
 		return (alGetError() == AL_NO_ERROR);
 	}
 
 	bool AudioPlayer::setGain(float gain)
 	{
-		alSourcef(source, AL_GAIN, gain);
+		alSourcef(this->source, AL_GAIN, gain);
 		return (alGetError() == AL_NO_ERROR);
 	}
 
 	bool AudioPlayer::setPitch(float pitch)
 	{
-		alSourcef(source, AL_PITCH, pitch);
+		alSourcef(this->source, AL_PITCH, pitch);
 		return (alGetError() == AL_NO_ERROR);
 	}
 
 	bool AudioPlayer::setLooping(bool looping)
 	{
-		alSourcei(source, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
+		alSourcei(this->source, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
 		return (alGetError() == AL_NO_ERROR);
 	}
 
