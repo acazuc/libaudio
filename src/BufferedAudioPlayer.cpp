@@ -47,8 +47,6 @@ namespace libaudio
 	}
 
 	BufferedAudioPlayer::BufferedAudioPlayer(std::string file)
-	: gain(1)
-	, loop(false)
 	{
 		this->file = std::fopen(file.c_str(), "rb");
 		if (!this->file)
@@ -84,19 +82,9 @@ namespace libaudio
 		std::fclose(this->file);
 	}
 
-	void BufferedAudioPlayer::play()
-	{
-		 Pa_StartStream(this->stream);
-	}
-
-	void BufferedAudioPlayer::pause()
-	{
-		Pa_AbortStream(this->stream);
-	}
-
 	void BufferedAudioPlayer::stop()
 	{
-		Pa_AbortStream(this->stream);
+		AudioPlayer::stop();
 		if (ov_raw_seek(&this->vorbisFile, 0))
 			throw Exception("Failed to seek file");
 	}
