@@ -1,114 +1,84 @@
 #include "AudioPlayer.h"
 #include "Exception.h"
-#include <iostream>
 #include <cstring>
-#include <vector>
 
 namespace libaudio
 {
 
-	AudioPlayer::AudioPlayer(std::string filename)
+	static int AudioPlayerCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *paTimeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 	{
-		SF_INFO fileInfos;
-		SNDFILE* file = sf_open(filename.c_str(), SFM_READ, &fileInfos);
-		if (!file)
-			throw Exception("Can't open file");
-		ALsizei nbSamples  = static_cast<ALsizei>(fileInfos.channels * fileInfos.frames);
-		ALsizei sampleRate = static_cast<ALsizei>(fileInfos.samplerate);
-		if (nbSamples <= 0)
+		AudioPlayer *audioPlayer = reinterpret_cast<AudioPlayer*>(userData);
+		char *out = reinterpret_cast<char*>(output);
+		int readed = 0;
+		frameCount *= audioPlayer->outputParameters.channelCount * 2;
+		while (frameCount > 0)
 		{
-			sf_close(file);
-			throw Exception("Invalid samples number");
-		}
-		float *raw = new float[nbSamples];
-		sf_read_float(file, raw, nbSamples);
-		sf_close(file);
-		ALshort *samples = new ALshort[nbSamples];
-		int16_t *d = &samples[0];
-		float m_oggmax = 1;
-		for (int64_t i = 0; i < nbSamples; i++)
-		{
-			if (raw[i] > m_oggmax)
-				m_oggmax = raw[i];
-			d[i] = raw[i] / m_oggmax * 32767.0f;
-		}
-		delete[] (raw);
-		ALenum format;
-		switch (fileInfos.channels)
-		{
-			case 1:
-				format = AL_FORMAT_MONO16;
-				break;
-			case 2:
-				format = AL_FORMAT_STEREO16;
-				break;
-			default:
+			size_t available = audioPlayer->len - audioPlayer->pos;
+			if (available == 0)
 			{
-				delete[] (samples);
-				throw Exception("Invalid channels");
+				if (audioPlayer->isLoop())
+				{
+					available = audioPlayer->len;
+					audioPlayer->pos = 0;
+				}
+				else
+				{
+					if (readed)
+					{
+						std::memset(out, 0, frameCount);
+						return (paContinue);
+					}
+					return (paAbort);
+				}
 			}
+			if (available > frameCount)
+				available = frameCount;
+			std::memcpy(out, audioPlayer->datas + audioPlayer->pos, available);
+			for (long i = 0; i < available; ++i)
+				reinterpret_cast<int16_t*>(out)[i] *= audioPlayer->getGain();
+			frameCount -= available;
+			out += available;
+			readed = 1;
 		}
-		alGenSources(1, &this->source);
-		if (alGetError() != AL_NO_ERROR)
-			throw Exception("Can't generate OpenAL source");
-		alGenBuffers(1, &this->buffer);
-		if (alGetError() != AL_NO_ERROR)
-		{
-			delete[] (samples);
-			alDeleteSources(1, &this->source);
-			throw Exception("Can't generate OpenAL buffer");
-		}
-		alBufferData(this->buffer, format, &samples[0], nbSamples * sizeof(int16_t), sampleRate);
-		delete[] (samples);
-		if (alGetError() != AL_NO_ERROR)
-		{
-			alDeleteBuffers(1, &this->buffer);
-			alDeleteSources(1, &this->source);
-			throw Exception("Cant't fill OpenAL buffer datas");
-		}
-		alSourcei(this->source, AL_BUFFER, this->buffer);
-		if (alGetError() != AL_NO_ERROR)
-		{
-			alDeleteBuffers(1, &this->buffer);
-			alDeleteSources(1, &this->source);
-			throw Exception("Can't bind OpenAL buffer to OpenAL source");
-		}
+		return (paContinue);
+	}
+
+	AudioPlayer::AudioPlayer(char *datas, size_t len, int rate, int channelsCount)
+	: gain(1)
+	, loop(false)
+	, datas(reinterpret_cast<int16_t*>(datas))
+	, len(len)
+	, pos(0)
+	{
+		this->outputParameters.device = Pa_GetDefaultOutputDevice();
+		this->outputParameters.channelCount = channelsCount;
+		this->outputParameters.sampleFormat = paInt16;
+		this->outputParameters.suggestedLatency = 0.2;
+		this->outputParameters.hostApiSpecificStreamInfo = 0;
+		PaError error = Pa_OpenStream(&this->stream, 0, &outputParameters, rate, rate / 20, paNoFlag, AudioPlayerCallback, this);
+		if (error)
+			throw std::exception();
 	}
 
 	AudioPlayer::~AudioPlayer()
 	{
-		alDeleteBuffers(1, &this->buffer);
-		alDeleteSources(1, &this->source);
+		Pa_CloseStream(&this->stream);
 	}
 
-	bool AudioPlayer::play()
+	void AudioPlayer::play()
 	{
-		alSourcePlay(this->source);
-		return (alGetError() == AL_NO_ERROR);
+		 Pa_StartStream(this->stream);
 	}
 
-	bool AudioPlayer::pause()
+	void AudioPlayer::pause()
 	{
-		alSourcePause(this->source);
-		return (alGetError() == AL_NO_ERROR);
+		Pa_AbortStream(this->stream);
 	}
 
-	bool AudioPlayer::setGain(float gain)
+	void AudioPlayer::stop()
 	{
-		alSourcef(this->source, AL_GAIN, gain);
-		return (alGetError() == AL_NO_ERROR);
-	}
-
-	bool AudioPlayer::setPitch(float pitch)
-	{
-		alSourcef(this->source, AL_PITCH, pitch);
-		return (alGetError() == AL_NO_ERROR);
-	}
-
-	bool AudioPlayer::setLooping(bool looping)
-	{
-		alSourcei(this->source, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
-		return (alGetError() == AL_NO_ERROR);
+		Pa_AbortStream(this->stream);
+		this->pos = 0;
 	}
 
 }

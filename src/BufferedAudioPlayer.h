@@ -1,12 +1,11 @@
-#ifndef BUFFERED_AUDIO_PLAYER_H
-# define BUFFERED_AUDIO_PLAYER_H
+#ifndef LIBAUDIO_BUFFERED_AUDIO_PLAYER_H
+# define LIBAUDIO_BUFFERED_AUDIO_PLAYER_H
 
-# define BUFFERED_AUDIO_PLAYER_BUFFER_NUMBER 10
-
-# include <sndfile.h>
-# include <AL/alc.h>
-# include <AL/al.h>
-# include <string>
+#include <vorbis/vorbisfile.h>
+#include <vorbis/codec.h>
+#include <portaudio.h>
+#include <cstdio>
+#include <string>
 
 namespace libaudio
 {
@@ -15,28 +14,24 @@ namespace libaudio
 	{
 
 	private:
-		SNDFILE *sndfile;
-		ALsizei sampleRate;
-		ALsizei nbSamples;
-		ALuint buffers[BUFFERED_AUDIO_PLAYER_BUFFER_NUMBER];
-		ALenum format;
-		ALuint source;
-		float oggMax;
-		bool buffersCreated;
-		bool sourceCreated;
-		bool looping;
-		bool ended;
-		bool fillBuffer(ALuint buff);
+		FILE *file;
+		float gain;
+		bool loop;
 
 	public:
-		BufferedAudioPlayer(std::string filename);
+		PaStreamParameters outputParameters;
+		OggVorbis_File vorbisFile;
+		vorbis_info *vorbisInfos;
+		PaStream *stream;
+		BufferedAudioPlayer(std::string file);
 		~BufferedAudioPlayer();
-		bool tick();
-		bool play();
-		bool pause();
-		bool setGain(float gain);
-		bool setPitch(float pitch);
-		void setLooping(bool looping);
+		void play();
+		void pause();
+		void stop();
+		inline float getGain() {return (this->gain);};
+		inline void setGain(float gain) {this->gain = std::min(1.f, std::max(0.f, gain));};
+		inline bool isLoop() {return (this->loop);};
+		inline void setLoop(bool loop) {this->loop = loop;};
 
 	};
 
