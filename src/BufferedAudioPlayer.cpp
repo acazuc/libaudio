@@ -36,8 +36,13 @@ namespace libaudio
 				return (paAbort);
 			else
 			{
-				for (long i = 0; i < ret; ++i)
-					reinterpret_cast<int16_t*>(out)[i] *= audioPlayer->getGain();
+				if (audioPlayer->getGain() == 0)
+					std::memset(out, 0, ret * 2);
+				else if (audioPlayer->getGain() != 1)
+				{
+					for (long i = 0; i < ret; ++i)
+						reinterpret_cast<int16_t*>(out)[i] *= audioPlayer->getGain();
+				}
 				frameCount -= ret;
 				out += ret;
 				readed = 1;
@@ -48,6 +53,7 @@ namespace libaudio
 
 	BufferedAudioPlayer::BufferedAudioPlayer(std::string file)
 	{
+		AudioPlayer();
 		this->file = std::fopen(file.c_str(), "rb");
 		if (!this->file)
 			throw Exception("Failed to open file");

@@ -1,6 +1,7 @@
 #include "CachedAudioPlayer.h"
 #include "Exception.h"
 #include <cstring>
+#include <iostream>
 
 namespace libaudio
 {
@@ -33,10 +34,19 @@ namespace libaudio
 			}
 			if (available > frameCount)
 				available = frameCount;
-			std::memcpy(out, audioPlayer->datas + audioPlayer->pos, available);
-			for (long i = 0; i < available; ++i)
-				reinterpret_cast<int16_t*>(out)[i] *= audioPlayer->getGain();
+			if (audioPlayer->getGain() == 0)
+				std::memset(out, 0, available);
+			else
+			{
+				std::memcpy(out, audioPlayer->datas + audioPlayer->pos, available);
+				if (audioPlayer->getGain() != 1)
+				{
+					for (long i = 0; i < available / 2; ++i)
+						reinterpret_cast<int16_t*>(out)[i] *= audioPlayer->getGain();
+				}
+			}
 			frameCount -= available;
+			audioPlayer->pos += available;
 			out += available;
 			readed = 1;
 		}
@@ -48,6 +58,7 @@ namespace libaudio
 	, len(len)
 	, pos(0)
 	{
+		AudioPlayer();
 		this->outputParameters.device = Pa_GetDefaultOutputDevice();
 		this->outputParameters.channelCount = channelsCount;
 		this->outputParameters.sampleFormat = paInt16;
