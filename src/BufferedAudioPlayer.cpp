@@ -40,7 +40,7 @@ namespace libaudio
 					std::memset(out, 0, ret * 2);
 				else if (audioPlayer->getGain() != 1)
 				{
-					for (long i = 0; i < ret; ++i)
+					for (long i = 0; i < ret / 2; ++i)
 						reinterpret_cast<int16_t*>(out)[i] *= audioPlayer->getGain();
 				}
 				frameCount -= ret;

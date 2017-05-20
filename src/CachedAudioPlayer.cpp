@@ -38,7 +38,7 @@ namespace libaudio
 				std::memset(out, 0, available);
 			else
 			{
-				std::memcpy(out, audioPlayer->datas + audioPlayer->pos, available);
+				std::memmove(out, reinterpret_cast<char*>(audioPlayer->datas) + audioPlayer->pos, available);
 				if (audioPlayer->getGain() != 1)
 				{
 					for (long i = 0; i < available / 2; ++i)

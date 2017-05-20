@@ -41,21 +41,21 @@ namespace libaudio
 			if (buffer)
 			{
 				std::memcpy(buf2, buffer, bufLen);
-				delete[](buffer);
+				delete[] (buffer);
 			}
 			std::memcpy(buf2 + bufLen, tmp, ret);
 			buffer = buf2;
 			bufLen += ret;
 		}
 		*len = bufLen;
-		delete[](tmp);
+		delete[] (tmp);
 		*datas = buffer;
 		ov_clear(&vorbisFile);
 		std::fclose(file);
 		if (ret == -1)
 		{
 			if (buffer)
-				delete[](buffer);
+				delete[] (buffer);
 			return (-1);
 		}
 		return (0);

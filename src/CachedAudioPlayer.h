@@ -2,9 +2,7 @@
 # define LIBAUDIO_CACHED_AUDIO_PLAYER_H
 
 #include "AudioPlayer.h"
-
-#include <vorbis/vorbisfile.h>
-#include <vorbis/codec.h>
+#include <cstdint>
 
 namespace libaudio
 {
