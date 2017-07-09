@@ -7,6 +7,9 @@ namespace libaudio
 
 	static int BufferedAudioPlayerCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *paTimeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 	{
+		(void)input;
+		(void)paTimeInfo;
+		(void)statusFlags;
 		BufferedAudioPlayer *audioPlayer = reinterpret_cast<BufferedAudioPlayer*>(userData);
 		char *out = reinterpret_cast<char*>(output);
 		frameCount *= audioPlayer->outputParameters.channelCount * 2;
@@ -53,7 +56,6 @@ namespace libaudio
 
 	BufferedAudioPlayer::BufferedAudioPlayer(std::string file)
 	{
-		AudioPlayer();
 		this->file = std::fopen(file.c_str(), "rb");
 		if (!this->file)
 			throw Exception("Failed to open file");
