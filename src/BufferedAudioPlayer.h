@@ -1,11 +1,10 @@
 #ifndef LIBAUDIO_BUFFERED_AUDIO_PLAYER_H
 # define LIBAUDIO_BUFFERED_AUDIO_PLAYER_H
 
-#include "AudioPlayer.h"
-#include <vorbis/vorbisfile.h>
-#include <vorbis/codec.h>
-#include <cstdio>
-#include <string>
+# include "AudioInclude.h"
+# include "AudioPlayer.h"
+# include <cstdio>
+# include <string>
 
 
 namespace libaudio

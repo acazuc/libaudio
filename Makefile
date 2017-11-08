@@ -12,11 +12,12 @@ RANLIB = gcc-ranlib
 
 RANLIBFLAGS =
 
-CLFAGS = -g -Wall -Wextra -Werror -Ofast -pipe -mtune=generic -fuse-linker-plugin -flto=8
+CLFAGS = -g -Wall -Wextra -Werror -O2 -pipe -mtune=generic -fuse-linker-plugin -flto
 
 INCLUDES_PATH = -I src
-INCLUDES_PATH+= -I ../lib/sndfile/src
-INCLUDES_PATH+= -I ../lib/openal/include
+INCLUDES_PATH+= -I ../lib/portaudio/include
+INCLUDES_PATH+= -I ../lib/libvorbis/include
+INCLUDES_PATH+= -I ../lib/libogg/include
 
 SRCS_PATH = src/
 

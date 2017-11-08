@@ -1,10 +1,8 @@
 #include "loadDatas.h"
-#include <vorbis/vorbisfile.h>
-#include <vorbis/codec.h>
+# include "AudioInclude.h"
 #include <cstring>
 #include <vector>
 #include <cstdio>
-#include <iostream>
 
 namespace libaudio
 {

@@ -1,6 +1,8 @@
 #ifndef LIBAUDIO_AUDIO_DEVICE_H
 # define LIBAUDIO_AUDIO_DEVICE_H
 
+# include <string>
+
 namespace libaudio
 {
 

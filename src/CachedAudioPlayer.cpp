@@ -1,7 +1,6 @@
 #include "CachedAudioPlayer.h"
 #include "Exception.h"
 #include <cstring>
-#include <iostream>
 
 namespace libaudio
 {
