@@ -16,7 +16,7 @@ namespace libaudio
 		int16_t *datas;
 		size_t len;
 		size_t pos;
-		CachedAudioPlayer(char *datas, size_t len, int rate, int channelsCount);
+		CachedAudioPlayer(int16_t *datas, size_t len, int rate, int channelsCount);
 		void stop();
 
 	};

@@ -55,17 +55,18 @@ namespace libaudio
 		return (paContinue);
 	}
 
-	CachedAudioPlayer::CachedAudioPlayer(char *datas, size_t len, int rate, int channelsCount)
-	: datas(reinterpret_cast<int16_t*>(datas))
+	CachedAudioPlayer::CachedAudioPlayer(int16_t *datas, size_t len, int rate, int channelsCount)
+	: datas(datas)
 	, len(len)
 	, pos(0)
 	{
 		this->outputParameters.device = Pa_GetDefaultOutputDevice();
+		const PaDeviceInfo *deviceInfo = Pa_GetDeviceInfo(this->outputParameters.device);
 		this->outputParameters.channelCount = channelsCount;
 		this->outputParameters.sampleFormat = paInt16;
-		this->outputParameters.suggestedLatency = 0.2;
-		this->outputParameters.hostApiSpecificStreamInfo = 0;
-		PaError error = Pa_OpenStream(&this->stream, 0, &outputParameters, rate, rate / 20, paNoFlag, CachedAudioPlayerCallback, this);
+		this->outputParameters.suggestedLatency = deviceInfo->defaultHighOutputLatency;
+		this->outputParameters.hostApiSpecificStreamInfo = NULL;
+		PaError error = Pa_OpenStream(&this->stream, NULL, &outputParameters, rate, rate / 20, paNoFlag, CachedAudioPlayerCallback, this);
 		if (error)
 			throw std::exception();
 	}

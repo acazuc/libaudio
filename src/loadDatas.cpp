@@ -1,5 +1,6 @@
 #include "loadDatas.h"
-# include "AudioInclude.h"
+#include <vorbis/vorbisfile.h>
+#include <vorbis/codec.h>
 #include <cstring>
 #include <vector>
 #include <cstdio>
@@ -7,7 +8,7 @@
 namespace libaudio
 {
 
-	int loadDatas(std::string filename, char **datas, size_t *len, int *rate, int *channelsCount)
+	int loadDatas(std::string filename, int16_t **datas, size_t *len, int *rate, int *channelsCount)
 	{
 		OggVorbis_File vorbisFile;
 		vorbis_info *vorbisInfos;
@@ -27,15 +28,15 @@ namespace libaudio
 		}
 		*rate = vorbisInfos->rate;
 		*channelsCount = vorbisInfos->channels;
-		char *buffer = NULL;
+		int16_t *buffer = NULL;
 		size_t bufLen = 0;
-		char *buf2;
-		char *tmp = new char[4096];
+		int16_t *buf2;
+		int16_t *tmp = new int16_t[4096 / 2];
 		long ret;
 		int osef;
-		while ((ret = ov_read(&vorbisFile, tmp, 4096, 0, 2, 1, &osef)) > 0)
+		while ((ret = ov_read(&vorbisFile, reinterpret_cast<char*>(tmp), 4096, 0, 2, 1, &osef)) > 0)
 		{
-			buf2 = new char[bufLen + ret];
+			buf2 = new int16_t[bufLen + ret];
 			if (buffer)
 			{
 				std::memcpy(buf2, buffer, bufLen);

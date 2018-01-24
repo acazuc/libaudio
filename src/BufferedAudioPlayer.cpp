@@ -1,23 +1,23 @@
 #include "BufferedAudioPlayer.h"
 #include "Exception.h"
+#include <math.h>
 #include <cstring>
 
 namespace libaudio
 {
 
-	static int BufferedAudioPlayerCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *paTimeInfo, PaStreamCallbackFlags statusFlags, void *userData)
+	int BufferedAudioPlayer::callback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *paTimeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 	{
 		(void)input;
 		(void)paTimeInfo;
 		(void)statusFlags;
 		BufferedAudioPlayer *audioPlayer = reinterpret_cast<BufferedAudioPlayer*>(userData);
-		char *out = reinterpret_cast<char*>(output);
-		frameCount *= audioPlayer->outputParameters.channelCount * 2;
-		int readed = 0;
-		int osef;
+		float *out = reinterpret_cast<float*>(output);
+		bool readed = false;
 		while (frameCount > 0)
 		{
-			long ret = ov_read(&audioPlayer->vorbisFile, out, frameCount, 0, 2, 1, &osef);
+			float **datas;
+			long ret = ov_read_float(&audioPlayer->vorbisFile, &datas, frameCount, NULL);
 			if (ret == 0)
 			{
 				if (audioPlayer->isLoop())
@@ -29,26 +29,40 @@ namespace libaudio
 				{
 					if (readed)
 					{
-						std::memset(out, 0, frameCount);
+						std::memset(out, 0, frameCount * sizeof(*out));
 						return (paContinue);
 					}
 					return (paAbort);
 				}
 			}
 			else if (ret < 0)
+			{
 				return (paAbort);
+			}
 			else
 			{
 				if (audioPlayer->getGain() == 0)
-					std::memset(out, 0, ret * 2);
+				{
+					std::memset(out, 0, ret * sizeof(*out));
+				}
 				else if (audioPlayer->getGain() != 1)
 				{
-					for (long i = 0; i < ret / 2; ++i)
-						reinterpret_cast<int16_t*>(out)[i] *= audioPlayer->getGain();
+					for (long i = 0; i < ret; ++i)
+					{
+						for (long j = 0; j < audioPlayer->outputParameters.channelCount; ++j)
+							*out++ = datas[j][i] * audioPlayer->getGain();
+					}
+				}
+				else
+				{
+					for (long i = 0; i < ret; ++i)
+					{
+						for (long j = 0; j < audioPlayer->outputParameters.channelCount; ++j)
+							*out++ = datas[j][i];
+					}
 				}
 				frameCount -= ret;
-				out += ret;
-				readed = 1;
+				readed = true;
 			}
 		}
 		return (paContinue);
@@ -58,29 +72,31 @@ namespace libaudio
 	{
 		this->file = std::fopen(file.c_str(), "rb");
 		if (!this->file)
-			throw Exception("Failed to open file");
-		if (ov_open_callbacks(this->file, &this->vorbisFile, NULL, 0, OV_CALLBACKS_NOCLOSE) < 0)
+			throw Exception("fopen() error");
+		int ov_error = ov_open_callbacks(this->file, &this->vorbisFile, NULL, 0, OV_CALLBACKS_NOCLOSE);
+		if (ov_error)
 		{
 			std::fclose(this->file);
-			throw Exception("Failed to open ogg file");
+			throw Exception("ov_open_callbacks() error: " + std::to_string(ov_error));
 		}
 		if (!(this->vorbisInfos = ov_info(&this->vorbisFile, -1)))
 		{
 			ov_clear(&this->vorbisFile);
 			std::fclose(this->file);
-			throw Exception("Failed to get ogg file infos");
+			throw Exception("ov_info() error");
 		}
-		outputParameters.device = Pa_GetDefaultOutputDevice();
-		outputParameters.channelCount = this->vorbisInfos->channels;
-		outputParameters.sampleFormat = paInt16;
-		outputParameters.suggestedLatency = 0.2;
-		outputParameters.hostApiSpecificStreamInfo = 0;
-		PaError error = Pa_OpenStream(&this->stream, 0, &outputParameters, this->vorbisInfos->rate, this->vorbisInfos->rate / 20, paNoFlag, BufferedAudioPlayerCallback, this);
-		if (error)
+		this->outputParameters.device = Pa_GetDefaultOutputDevice();
+		const PaDeviceInfo *deviceInfo = Pa_GetDeviceInfo(this->outputParameters.device);
+		this->outputParameters.channelCount = this->vorbisInfos->channels;
+		this->outputParameters.sampleFormat = paFloat32;
+		this->outputParameters.suggestedLatency = deviceInfo->defaultHighOutputLatency;
+		this->outputParameters.hostApiSpecificStreamInfo = NULL;
+		PaError Pa_error = Pa_OpenStream(&this->stream, NULL, &this->outputParameters, this->vorbisInfos->rate, paFramesPerBufferUnspecified, paNoFlag, &BufferedAudioPlayer::callback, this);
+		if (Pa_error)
 		{
 			ov_clear(&this->vorbisFile);
 			std::fclose(this->file);
-			throw Exception("Failed to create portaudio stream");
+			throw Exception("Pa_OpenStream() error: " + std::string(Pa_GetErrorText(Pa_error)));
 		}
 	}
 

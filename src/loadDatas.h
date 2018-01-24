@@ -7,7 +7,7 @@
 namespace libaudio
 {
 
-	int loadDatas(std::string file, char **datas, size_t *len, int *rate, int *channelsCount);
+	int loadDatas(std::string file, int16_t **datas, size_t *len, int *rate, int *channelsCount);
 
 }
 
