@@ -37,7 +37,9 @@ namespace libaudio
 			if (available > frameCount)
 				available = frameCount;
 			if (audioPlayer->getGain() == 0)
+			{
 				std::memset(out, 0, available);
+			}
 			else
 			{
 				std::memmove(out, reinterpret_cast<char*>(audioPlayer->datas) + audioPlayer->pos, available);
@@ -66,9 +68,9 @@ namespace libaudio
 		this->outputParameters.sampleFormat = paInt16;
 		this->outputParameters.suggestedLatency = deviceInfo->defaultHighOutputLatency;
 		this->outputParameters.hostApiSpecificStreamInfo = NULL;
-		PaError error = Pa_OpenStream(&this->stream, NULL, &outputParameters, rate, rate / 20, paNoFlag, CachedAudioPlayerCallback, this);
-		if (error)
-			throw std::exception();
+		PaError Pa_error = Pa_OpenStream(&this->stream, NULL, &outputParameters, rate, rate / 20, paNoFlag, CachedAudioPlayerCallback, this);
+		if (Pa_error)
+			throw Exception("Pa_OpenStream() error: " + std::string(Pa_GetErrorText(Pa_error)));
 	}
 
 	void CachedAudioPlayer::stop()

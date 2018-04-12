@@ -14,6 +14,7 @@ namespace libaudio
 		BufferedAudioPlayer *audioPlayer = reinterpret_cast<BufferedAudioPlayer*>(userData);
 		float *out = reinterpret_cast<float*>(output);
 		bool readed = false;
+		bool hasLooped = false;
 		while (frameCount > 0)
 		{
 			float **datas;
@@ -22,8 +23,11 @@ namespace libaudio
 			{
 				if (audioPlayer->isLoop())
 				{
+					if (hasLooped)
+						return (paAbort);
 					if (ov_raw_seek(&audioPlayer->vorbisFile, 0))
 						return (paAbort);
+					hasLooped = true;
 				}
 				else
 				{
@@ -41,9 +45,18 @@ namespace libaudio
 			}
 			else
 			{
-				if (audioPlayer->getGain() == 0)
+				hasLooped = false;
+				if (audioPlayer->getGain() <= 0)
 				{
 					std::memset(out, 0, ret * sizeof(*out));
+				}
+				else if (audioPlayer->getGain() >= 1)
+				{
+					for (long i = 0; i < ret; ++i)
+					{
+						for (long j = 0; j < audioPlayer->outputParameters.channelCount; ++j)
+							*out++ = datas[j][i];
+					}
 				}
 				else if (audioPlayer->getGain() != 1)
 				{
@@ -51,14 +64,6 @@ namespace libaudio
 					{
 						for (long j = 0; j < audioPlayer->outputParameters.channelCount; ++j)
 							*out++ = datas[j][i] * audioPlayer->getGain();
-					}
-				}
-				else
-				{
-					for (long i = 0; i < ret; ++i)
-					{
-						for (long j = 0; j < audioPlayer->outputParameters.channelCount; ++j)
-							*out++ = datas[j][i];
 					}
 				}
 				frameCount -= ret;
