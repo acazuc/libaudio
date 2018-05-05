@@ -22,6 +22,7 @@ namespace libaudio
 		void play();
 		void pause();
 		void stop();
+		bool isPlaying();
 		inline float getGain() {return (this->gain);};
 		inline void setGain(float gain) {this->gain = std::min(1.f, std::max(0.f, gain));};
 		inline bool isLoop() {return (this->loop);};

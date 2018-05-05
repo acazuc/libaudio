@@ -7,7 +7,8 @@
 namespace libaudio
 {
 
-	int loadDatas(std::string file, int16_t **datas, size_t *len, int *rate, int *channelsCount);
+	int32_t getPCMSize(std::string file);
+	int32_t loadDatas(std::string file, int16_t **datas, int *rate, int *channelsCount);
 
 }
 

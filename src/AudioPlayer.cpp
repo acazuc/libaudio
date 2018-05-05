@@ -12,7 +12,7 @@ namespace libaudio
 
 	AudioPlayer::~AudioPlayer()
 	{
-		Pa_CloseStream(&this->stream);
+		Pa_CloseStream(this->stream);
 	}
 
 	void AudioPlayer::play()
@@ -28,6 +28,11 @@ namespace libaudio
 	void AudioPlayer::stop()
 	{
 		Pa_AbortStream(this->stream);
+	}
+
+	bool AudioPlayer::isPlaying()
+	{
+		return (Pa_IsStreamActive(this->stream) == 1);
 	}
 
 }

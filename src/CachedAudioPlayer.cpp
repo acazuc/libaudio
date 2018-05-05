@@ -5,14 +5,16 @@
 namespace libaudio
 {
 
-	static int CachedAudioPlayerCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *paTimeInfo, PaStreamCallbackFlags statusFlags, void *userData)
+	int CachedAudioPlayer::callback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *paTimeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 	{
 		(void)input;
 		(void)paTimeInfo;
 		(void)statusFlags;
 		CachedAudioPlayer *audioPlayer = reinterpret_cast<CachedAudioPlayer*>(userData);
 		char *out = reinterpret_cast<char*>(output);
-		int readed = 0;
+		bool readed = false;
+		if (audioPlayer->len == 0)
+			return (paAbort);
 		frameCount *= audioPlayer->outputParameters.channelCount * 2;
 		while (frameCount > 0)
 		{
@@ -52,7 +54,7 @@ namespace libaudio
 			frameCount -= available;
 			audioPlayer->pos += available;
 			out += available;
-			readed = 1;
+			readed = true;
 		}
 		return (paContinue);
 	}
@@ -68,7 +70,7 @@ namespace libaudio
 		this->outputParameters.sampleFormat = paInt16;
 		this->outputParameters.suggestedLatency = deviceInfo->defaultHighOutputLatency;
 		this->outputParameters.hostApiSpecificStreamInfo = NULL;
-		PaError Pa_error = Pa_OpenStream(&this->stream, NULL, &outputParameters, rate, rate / 20, paNoFlag, CachedAudioPlayerCallback, this);
+		PaError Pa_error = Pa_OpenStream(&this->stream, NULL, &outputParameters, rate, paFramesPerBufferUnspecified, paNoFlag, &CachedAudioPlayer::callback, this);
 		if (Pa_error)
 			throw Exception("Pa_OpenStream() error: " + std::string(Pa_GetErrorText(Pa_error)));
 	}

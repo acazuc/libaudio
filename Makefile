@@ -25,6 +25,10 @@ SRCS_NAME = AudioPlayer.cpp \
 	    BufferedAudioPlayer.cpp \
 	    CachedAudioPlayer.cpp \
 	    loadDatas.cpp \
+	    Stream.cpp \
+	    Player.cpp \
+	    DirectPlayer.cpp \
+	    CachedPlayer.cpp \
 
 SRCS = $(addprefix $(SRCS_PATH), $(SRCS_NAME))
 
