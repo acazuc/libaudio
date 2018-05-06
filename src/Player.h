@@ -18,6 +18,7 @@ namespace libaudio
 		float gain;
 		float pan;
 		bool active;
+		bool loop;
 		void callback(float *out, unsigned long frameCount, uint32_t rate);
 		virtual void getData(float *out, uint32_t outLen, uint32_t inLen) {(void)out;(void)outLen;(void)inLen;};
 
@@ -29,6 +30,7 @@ namespace libaudio
 		void setPitch(float pitch);
 		void setGain(float gain);
 		void setPan(float pan);
+		void setLoop(bool loop);
 
 	};
 

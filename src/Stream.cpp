@@ -54,7 +54,7 @@ namespace libaudio
 		this->outputParameters.device = Pa_GetDefaultOutputDevice();
 		const PaDeviceInfo *deviceInfo = Pa_GetDeviceInfo(this->outputParameters.device);
 		if (!deviceInfo)
-			throw Exception("Invalid default device");
+			throw Exception("Pa_GetDeviceInfo() failed");
 		this->outputParameters.channelCount = 2;
 		this->outputParameters.sampleFormat = paFloat32;
 		this->outputParameters.suggestedLatency = deviceInfo->defaultHighOutputLatency;

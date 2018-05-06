@@ -10,6 +10,7 @@ namespace libaudio
 	, gain(1)
 	, pan(.5)
 	, active(false)
+	, loop(false)
 	{
 		//Empty
 	}
@@ -76,6 +77,11 @@ namespace libaudio
 	void Player::setPan(float pan)
 	{
 		this->pan = std::max(0.f, std::min(1.f, pan));
+	}
+
+	void Player::setLoop(bool loop)
+	{
+		this->loop = loop;
 	}
 
 }

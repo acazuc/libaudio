@@ -3,12 +3,13 @@
 
 # include <cstdint>
 # include <string>
+# include <vector>
 
 namespace libaudio
 {
 
 	int32_t getPCMSize(std::string file);
-	int32_t loadDatas(std::string file, int16_t **datas, int *rate, int *channelsCount);
+	bool loadDatas(std::string file, std::vector<float> &datas, int *rate, int *channelsCount);
 
 }
 
