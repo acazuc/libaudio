@@ -19,7 +19,7 @@ namespace libaudio
 		float pan;
 		bool active;
 		void callback(float *out, unsigned long frameCount, uint32_t rate);
-		virtual void getData(float *out, unsigned long frameCount) {(void)out;(void)frameCount;};
+		virtual void getData(float *out, uint32_t outLen, uint32_t inLen) {(void)out;(void)outLen;(void)inLen;};
 
 	public:
 		Player();

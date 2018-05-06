@@ -13,7 +13,7 @@ namespace libaudio
 		uint32_t position;
 		uint32_t length;
 		float *data;
-		void getData(float *out, unsigned long frameCount);
+		void getData(float *out, uint32_t outLen, uint32_t inLen);
 
 	public:
 		CachedPlayer(float *data, uint32_t length, uint32_t rate);

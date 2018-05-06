@@ -23,7 +23,13 @@ namespace libaudio
 	{
 		if (!frameCount)
 			return;
-		getData(out, frameCount * 2);
+		if (!this->active)
+		{
+			for (uint32_t i = 0; i < frameCount * 2; ++i)
+				out[i] = 0;
+			return;
+		}
+		getData(out, frameCount * 2, this->rate / static_cast<float>(rate) * frameCount * 2 * this->pitch);
 		if (this->gain == 0)
 		{
 			for (uint32_t i = 0; i < frameCount * 2; ++i)

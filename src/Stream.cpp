@@ -18,7 +18,7 @@ namespace libaudio
 			out[i] = 0;
 		for (uint32_t i = 0; i < stream->players.size(); ++i)
 		{
-			stream->players[i]->callback(tmp.data(), frameCount, stream->rate);
+			stream->players[i]->callback(tmp.data(), frameCount, stream->rate / stream->pitch);
 			for (uint32_t i = 0; i < frameCount * 2; ++i)
 				out[i] += tmp[i];
 		}
