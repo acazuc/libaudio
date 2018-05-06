@@ -21,10 +21,7 @@ INCLUDES_PATH+= -I ../lib/libogg/include
 
 SRCS_PATH = src/
 
-SRCS_NAME = AudioPlayer.cpp \
-	    BufferedAudioPlayer.cpp \
-	    CachedAudioPlayer.cpp \
-	    loadDatas.cpp \
+SRCS_NAME = loadDatas.cpp \
 	    Stream.cpp \
 	    Player.cpp \
 	    DirectPlayer.cpp \
