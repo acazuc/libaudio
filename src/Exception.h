@@ -16,7 +16,7 @@ namespace libaudio
 	public:
 		Exception(std::string str): err(str) {};
 		~Exception() throw() {};
-		const char *what() const throw() {return (this->err.c_str());};
+		const char *what() const throw() {return this->err.c_str();};
 
 	};
 

@@ -13,17 +13,17 @@ namespace libaudio
 		OggVorbis_File vorbisFile;
 		FILE *file = std::fopen(filename.c_str(), "rb");
 		if (!file)
-			return (-1);
+			return -1;
 		if (ov_open_callbacks(file, &vorbisFile, NULL, 0, OV_CALLBACKS_NOCLOSE) < 0)
 		{
 			std::fclose(file);
-			return (-1);
+			return -1;
 		}
 		ogg_int64_t len = ov_pcm_total(&vorbisFile, -1);
 		std::fclose(file);
 		if (len < 0)
-			return (-1);
-		return (len);
+			return -1;
+		return len;
 	}
 
 	bool loadDatas(std::string filename, std::vector<float> &datas, int *rate, int *channelsCount)
@@ -32,17 +32,17 @@ namespace libaudio
 		vorbis_info *vorbisInfos;
 		FILE *file = std::fopen(filename.c_str(), "rb");
 		if (!file)
-			return (false);
+			return false;
 		if (ov_open_callbacks(file, &vorbisFile, NULL, 0, OV_CALLBACKS_NOCLOSE) < 0)
 		{
 			std::fclose(file);
-			return (false);
+			return false;
 		}
 		if (!(vorbisInfos = ov_info(&vorbisFile, -1)))
 		{
 			ov_clear(&vorbisFile);
 			std::fclose(file);
-			return (false);
+			return false;
 		}
 		*rate = vorbisInfos->rate;
 		*channelsCount = vorbisInfos->channels;
@@ -62,8 +62,8 @@ namespace libaudio
 		ov_clear(&vorbisFile);
 		std::fclose(file);
 		if (ret < 0)
-			return (false);
-		return (true);
+			return false;
+		return true;
 	}
 
 }

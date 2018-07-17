@@ -12,7 +12,7 @@ namespace libaudio
 		Stream *stream = reinterpret_cast<Stream*>(userData);
 		float *out = reinterpret_cast<float*>(output);
 		if (!frameCount)
-			return (paContinue);
+			return paContinue;
 		std::vector<float> tmp(frameCount * 2);
 		for (uint32_t i = 0; i < frameCount * 2; ++i)
 			out[i] = 0;
@@ -26,7 +26,7 @@ namespace libaudio
 		{
 			for (uint32_t i = 0; i < frameCount * 2; ++i)
 				out[i] = 0;
-			return (paContinue);
+			return paContinue;
 		}
 		if (stream->gain != 1)
 		{
@@ -43,7 +43,7 @@ namespace libaudio
 					out[i] *= std::max(0.f, (1 - stream->pan) * 2);
 			}
 		}
-		return (paContinue);
+		return paContinue;
 	}
 
 	Stream::Stream()
