@@ -1,5 +1,5 @@
-#ifndef PLAYER_H
-# define PLAYER_H
+#ifndef LIBAUDIO_PLAYER_H
+# define LIBAUDIO_PLAYER_H
 
 # include <cstdint>
 
@@ -31,6 +31,7 @@ namespace libaudio
 		void setGain(float gain);
 		void setPan(float pan);
 		void setLoop(bool loop);
+		inline bool isPlaying() {return this->active;};
 
 	};
 

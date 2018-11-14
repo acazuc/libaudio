@@ -35,12 +35,11 @@ namespace libaudio
 		}
 		if (stream->pan != .5)
 		{
-			for (uint32_t i = 0; i < frameCount * 2; ++i)
+			for (uint32_t i = 0; i < frameCount; ++i)
 			{
-				if (i & 1)
-					out[i] *= std::max(0.f, stream->pan * 2);
-				else
-					out[i] *= std::max(0.f, (1 - stream->pan) * 2);
+				float pan2 = stream->pan * 2;
+				out[i] *= std::max(0.f, 1 - pan2);
+				out[i + 1] *= std::max(0.f, pan2);
 			}
 		}
 		return paContinue;

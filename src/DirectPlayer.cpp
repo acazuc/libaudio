@@ -25,6 +25,12 @@ namespace libaudio
 		this->rate = this->vorbisInfos->rate;
 	}
 
+	DirectPlayer::~DirectPlayer()
+	{
+		std::fclose(this->file);
+		ov_clear(&this->vorbisFile);
+	}
+
 	void DirectPlayer::getData(float *out, uint32_t outLen, uint32_t inLen)
 	{
 		uint32_t readed = 0;

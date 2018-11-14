@@ -21,6 +21,7 @@ namespace libaudio
 
 	public:
 		DirectPlayer(std::string file);
+		~DirectPlayer();
 
 	};
 
