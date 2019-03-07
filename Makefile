@@ -4,13 +4,13 @@ CXX = g++
 
 override CXXFLAGS += -std=c++14 -g -Wall -Wextra -O3 -pipe
 
-AR = gcc-ar
+AR = ar
 
-override ARFLAGS +=
+ARFLAGS = rc
 
-RANLIB = gcc-ranlib
+RANLIB = ranlib
 
-override RANLIBFLAGS +=
+RANLIBFLAGS =
 
 INCLUDES_PATH = -I src
 INCLUDES_PATH+= -I ../lib/portaudio/include
@@ -43,7 +43,8 @@ all: odir $(NAME)
 
 $(NAME): $(OBJS)
 	@echo "AR $(NAME)"
-	@$(AR) -rc $(ARFLAGS) $(NAME) $(OBJS)
+	@$(AR) $(ARFLAGS) $(NAME) $(OBJS)
+	@echo "RANLIB $(NAME)"
 	@$(RANLIB) $(RANLIBFLAGS) $(NAME)
 
 $(OBJS_PATH)%.opp: $(SRCS_PATH)%.cpp
@@ -55,11 +56,9 @@ odir:
 	@mkdir -p $(OBJS_PATH)Filters
 
 clean:
-	@echo " - Cleaning objs"
 	@rm -f $(OBJS)
 
 fclean: clean
-	@echo " - Cleaning lib"
 	@rm -f $(NAME)
 
 re: fclean all
