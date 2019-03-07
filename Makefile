@@ -2,17 +2,15 @@ NAME = libaudio.a
 
 CXX = g++
 
-ARCH =
+override CXXFLAGS += -std=c++14 -g -Wall -Wextra -O3 -pipe
 
 AR = gcc-ar
 
-ARFLAGS =
+override ARFLAGS +=
 
 RANLIB = gcc-ranlib
 
-RANLIBFLAGS =
-
-override CXXFLAGS += -std=c++14 -g -Wall -Wextra -O3 -pipe
+override RANLIBFLAGS +=
 
 INCLUDES_PATH = -I src
 INCLUDES_PATH+= -I ../lib/portaudio/include
@@ -50,7 +48,7 @@ $(NAME): $(OBJS)
 
 $(OBJS_PATH)%.opp: $(SRCS_PATH)%.cpp
 	@echo "CXX $<"
-	@$(CXX) $(ARCH) $(CXXFLAGS) -o $@ -c $< $(INCLUDES_PATH)
+	@$(CXX) $(CXXFLAGS) -o $@ -c $< $(INCLUDES_PATH)
 
 odir:
 	@mkdir -p $(OBJS_PATH)
