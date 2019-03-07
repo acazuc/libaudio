@@ -3,13 +3,13 @@
 namespace libaudio
 {
 
-	CachedPlayer::CachedPlayer(float *data, uint32_t length, uint32_t rate, uint32_t channels)
+	CachedPlayer::CachedPlayer(float *data, uint32_t length, uint32_t sampling, uint32_t channels)
 	: position(0)
 	, channels(channels)
 	, length(length)
 	, data(data)
 	{
-		this->rate = rate;
+		this->sampling = sampling;
 	}
 
 	void CachedPlayer::getData(float *out, uint32_t outLen, uint32_t inLen)

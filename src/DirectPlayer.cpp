@@ -22,7 +22,7 @@ namespace libaudio
 			std::fclose(this->file);
 			throw Exception("ov_info() error");
 		}
-		this->rate = this->vorbisInfos->rate;
+		this->sampling = this->vorbisInfos->rate;
 	}
 
 	DirectPlayer::~DirectPlayer()
@@ -60,7 +60,7 @@ namespace libaudio
 			long outreaded = std::ceil(ret / ratio);
 			if (this->vorbisInfos->channels == 1)
 			{
-				for (uint32_t i = 0; i < outreaded; ++i)
+				for (long i = 0; i < outreaded; ++i)
 				{
 					out[readed + i * 2] = tmp[0][(uint32_t)(i * ratio)];
 					out[readed + i * 2 + 1] = tmp[0][(uint32_t)(i * ratio)];
@@ -68,7 +68,7 @@ namespace libaudio
 			}
 			else if (this->vorbisInfos->channels == 2)
 			{
-				for (uint32_t i = 0; i < outreaded; ++i)
+				for (long i = 0; i < outreaded; ++i)
 				{
 					out[readed + i * 2] = tmp[0][(uint32_t)(i * ratio)];
 					out[readed + i * 2 + 1] = tmp[1][(uint32_t)(i * ratio)];

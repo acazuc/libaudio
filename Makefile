@@ -1,6 +1,6 @@
 NAME = libaudio.a
 
-CC = g++
+CXX = g++
 
 ARCH =
 
@@ -12,7 +12,7 @@ RANLIB = gcc-ranlib
 
 RANLIBFLAGS =
 
-CLFAGS = -std=c++14 -g -Wall -Wextra -O3 -pipe -fno-rtti
+override CXXFLAGS += -std=c++14 -g -Wall -Wextra -O3 -pipe
 
 INCLUDES_PATH = -I src
 INCLUDES_PATH+= -I ../lib/portaudio/include
@@ -26,6 +26,12 @@ SRCS_NAME = loadDatas.cpp \
 	    Player.cpp \
 	    DirectPlayer.cpp \
 	    CachedPlayer.cpp \
+	    Filters/Filter.cpp \
+	    Filters/EchoFilter.cpp \
+	    Filters/BilinearTransformFilter.cpp \
+	    Filters/BandPassFilter.cpp \
+	    Filters/LowPassFilter.cpp \
+	    Filters/HighPassFilter.cpp \
 
 SRCS = $(addprefix $(SRCS_PATH), $(SRCS_NAME))
 
@@ -38,16 +44,17 @@ OBJS = $(addprefix $(OBJS_PATH), $(OBJS_NAME))
 all: odir $(NAME)
 
 $(NAME): $(OBJS)
-	@echo " - Making $(NAME)"
+	@echo "AR $(NAME)"
 	@$(AR) -rc $(ARFLAGS) $(NAME) $(OBJS)
 	@$(RANLIB) $(RANLIBFLAGS) $(NAME)
 
 $(OBJS_PATH)%.opp: $(SRCS_PATH)%.cpp
-	@echo " - Compiling $<"
-	@$(CC) $(ARCH) $(CFLAGS) -o $@ -c $< $(INCLUDES_PATH)
+	@echo "CXX $<"
+	@$(CXX) $(ARCH) $(CXXFLAGS) -o $@ -c $< $(INCLUDES_PATH)
 
 odir:
 	@mkdir -p $(OBJS_PATH)
+	@mkdir -p $(OBJS_PATH)Filters
 
 clean:
 	@echo " - Cleaning objs"

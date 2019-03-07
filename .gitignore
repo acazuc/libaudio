@@ -1,4 +1,3 @@
 libaudio.a
-*.swp
 obj
-*.gch
+*.swp

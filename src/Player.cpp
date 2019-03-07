@@ -20,31 +20,25 @@ namespace libaudio
 		//Empty
 	}
 
-	void Player::callback(float *out, unsigned long frameCount, uint32_t rate)
+	bool Player::callback(float *out, unsigned long frameCount, uint32_t sampling)
 	{
 		if (!frameCount)
-			return;
+			return false;
 		if (!this->active)
-		{
-			for (uint32_t i = 0; i < frameCount * 2; ++i)
-				out[i] = 0;
-			return;
-		}
-		getData(out, frameCount * 2, this->rate / static_cast<float>(rate) * frameCount * 2 * this->pitch);
+			return false;
+		getData(out, frameCount * 2, this->sampling / static_cast<float>(sampling) * frameCount * 2 * this->pitch);
 		if (this->gain == 0)
-		{
-			for (uint32_t i = 0; i < frameCount * 2; ++i)
-				out[i] = 0;
-			return;
-		}
+			return false;
+		for (size_t i = 0; i < this->filters.size(); ++i)
+			this->filters[i]->filter(out, frameCount);
 		if (this->gain != 1)
 		{
-			for (uint32_t i = 0; i < frameCount * 2; ++i)
+			for (size_t i = 0; i < frameCount * 2; ++i)
 				out[i] *= this->gain;
 		}
 		if (this->pan != .5)
 		{
-			for (uint32_t i = 0; i < frameCount * 2; ++i)
+			for (size_t i = 0; i < frameCount * 2; ++i)
 			{
 				if (i & 1)
 					out[i] *= std::max(0.f, this->pan * 2);
@@ -52,6 +46,7 @@ namespace libaudio
 					out[i] *= std::max(0.f, (1 - this->pan) * 2);
 			}
 		}
+		return true;
 	}
 
 	void Player::start()
@@ -62,6 +57,27 @@ namespace libaudio
 	void Player::stop()
 	{
 		this->active = false;
+	}
+
+	void Player::addFilter(Filter *filter)
+	{
+		for (size_t i = 0; i < this->filters.size(); ++i)
+		{
+			if (this->filters[i] == filter)
+				return;
+		}
+		this->filters.push_back(filter);
+	}
+
+	void Player::removeFilter(Filter *filter)
+	{
+		for (size_t i = 0; i < this->filters.size(); ++i)
+		{
+			if (this->filters[i] != filter)
+				continue;
+			this->filters.erase(this->filters.begin() + i);
+			return;
+		}
 	}
 
 	void Player::setPitch(float pitch)

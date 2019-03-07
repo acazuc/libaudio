@@ -26,7 +26,7 @@ namespace libaudio
 		return len;
 	}
 
-	bool loadDatas(std::string filename, std::vector<float> &datas, int *rate, int *channelsCount)
+	bool loadDatas(std::string filename, std::vector<float> &datas, int *sampling, int *channelsCount)
 	{
 		OggVorbis_File vorbisFile;
 		vorbis_info *vorbisInfos;
@@ -44,7 +44,7 @@ namespace libaudio
 			std::fclose(file);
 			return false;
 		}
-		*rate = vorbisInfos->rate;
+		*sampling = vorbisInfos->rate;
 		*channelsCount = vorbisInfos->channels;
 		datas.clear();
 		float **tmp;
@@ -53,9 +53,9 @@ namespace libaudio
 		{
 			uint32_t org = datas.size();
 			datas.resize(datas.size() + ret * *channelsCount);
-			for (uint32_t i = 0; i < ret; ++i)
+			for (long i = 0; i < ret; ++i)
 			{
-				for (long j = 0; j < *channelsCount; ++j)
+				for (int j = 0; j < *channelsCount; ++j)
 					datas[org + i * *channelsCount + j] = tmp[j][i];
 			}
 		}

@@ -9,7 +9,7 @@ namespace libaudio
 {
 
 	int32_t getPCMSize(std::string file);
-	bool loadDatas(std::string file, std::vector<float> &datas, int *rate, int *channelsCount);
+	bool loadDatas(std::string file, std::vector<float> &datas, int *sampling, int *channelsCount);
 
 }
 
